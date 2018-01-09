@@ -9,6 +9,9 @@ import org.bouncycastle.asn1.x509.GeneralName
 import org.bouncycastle.asn1.x509.GeneralSubtree
 import org.bouncycastle.asn1.x509.NameConstraints
 import java.security.cert.X509Certificate
+import javax.security.auth.x500.X500Principal
+
+// TODO Merge this file and DevIdentityGenerator
 
 /**
  * Create the node and SSL key stores needed by a node. The node key store will be populated with a node CA cert (using
@@ -39,6 +42,17 @@ fun SSLConfiguration.createDevKeyStores(rootCert: X509Certificate, intermediateC
     }
 }
 
+fun createDevNetworkMapCa(rootCa: CertificateAndKeyPair = DEV_ROOT_CA): CertificateAndKeyPair {
+    val keyPair = Crypto.generateKeyPair()
+    val cert = X509Utilities.createCertificate(
+            CertificateType.NETWORK_MAP,
+            rootCa.certificate,
+            rootCa.keyPair,
+            X500Principal("CN=Network Map,O=R3 Ltd,L=London,C=GB"),
+            keyPair.public)
+    return CertificateAndKeyPair(cert, keyPair)
+}
+
 /**
  * Create a dev node CA cert, as a sub-cert of the given [intermediateCa], and matching key pair using the given
  * [CordaX500Name] as the cert subject.
@@ -54,4 +68,16 @@ fun createDevNodeCa(intermediateCa: CertificateAndKeyPair, legalName: CordaX500N
             keyPair.public,
             nameConstraints = nameConstraints)
     return CertificateAndKeyPair(cert, keyPair)
+}
+
+val DEV_INTERMEDIATE_CA: CertificateAndKeyPair by lazy {
+    // TODO: Should be identity scheme
+    val caKeyStore = loadKeyStore(ClassLoader.getSystemResourceAsStream("certificates/cordadevcakeys.jks"), "cordacadevpass")
+    caKeyStore.getCertificateAndKeyPair(X509Utilities.CORDA_INTERMEDIATE_CA, "cordacadevkeypass")
+}
+
+val DEV_ROOT_CA: CertificateAndKeyPair by lazy {
+    // TODO: Should be identity scheme
+    val caKeyStore = loadKeyStore(ClassLoader.getSystemResourceAsStream("certificates/cordadevcakeys.jks"), "cordacadevpass")
+    caKeyStore.getCertificateAndKeyPair(X509Utilities.CORDA_ROOT_CA, "cordacadevkeypass")
 }

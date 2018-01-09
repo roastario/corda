@@ -71,7 +71,7 @@ Hence if an operator wants node A to see node B they can pick B's ``NodeInfo`` f
 Network parameters
 ------------------
 Network parameters are constants that every node participating in the network needs to agree on and use for interop purposes.
-The structure is distributed as a file containing serialized ``SignedData<NetworkParameters>`` with a signature from
+The structure is distributed as a file containing serialized ``SignedDataWithCert<NetworkParameters>`` with a signature from
 a sub-key of the compatibility zone root cert. Network map advertises the hash of currently used network parameters.
 The ``NetworkParameters`` structure contains:
  * ``minimumPlatformVersion`` -  minimum version of Corda platform that is required for nodes in the network.
