@@ -187,7 +187,7 @@ fun <A> driver(
 ): A {
     return genericDriver(
             driverDsl = DriverDSLImpl(
-                    portAllocation = PortAllocation.RandomFree,
+                    portAllocation = portAllocation,
                     debugPortAllocation = debugPortAllocation,
                     systemProperties = systemProperties,
                     driverDirectory = driverDirectory.toAbsolutePath(),
