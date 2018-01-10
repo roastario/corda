@@ -18,6 +18,7 @@ import net.corda.testing.*
 import net.corda.testing.driver.driver
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.fail
 
 class IntegrationTestingTutorial {
     @Test
@@ -108,5 +109,6 @@ class IntegrationTestingTutorial {
             }
             // END 5
         }
+        fail("it passed!!!")
     }
 }
