@@ -100,7 +100,6 @@ class AttachmentLoadingTests {
         assertEquals(expected, actual)
     }
 
-    @Ignore("Test has undeterministic capacity to hang, ignore till fixed")
     @Test
     fun `test that attachments retrieved over the network are not used for code`() = withoutTestSerialization {
         driver {
