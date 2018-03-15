@@ -2,6 +2,7 @@ package net.corda.node.services.network
 
 import net.corda.core.crypto.SecureHash
 import net.corda.core.crypto.SignedData
+import net.corda.core.identity.PartyAndCertificate
 import net.corda.core.internal.*
 import net.corda.core.node.NodeInfo
 import net.corda.core.serialization.deserialize
@@ -17,7 +18,7 @@ import java.net.URL
 import java.security.cert.X509Certificate
 import java.time.Duration
 
-class NetworkMapClient(compatibilityZoneURL: URL, val trustedRoot: X509Certificate) {
+class NetworkMapClient(compatibilityZoneURL: URL, val trustedRoot: X509Certificate, val identity: PartyAndCertificate? = null) {
     companion object {
         private val logger = contextLogger()
     }
@@ -40,7 +41,7 @@ class NetworkMapClient(compatibilityZoneURL: URL, val trustedRoot: X509Certifica
 
     fun getNetworkMap(): NetworkMapResponse {
         logger.trace { "Fetching network map update from $networkMapUrl." }
-        val connection = networkMapUrl.openHttpConnection()
+        val connection = networkMapUrl.get(identity?.owningKey)
         val signedNetworkMap = connection.responseAs<SignedNetworkMap>()
         val networkMap = signedNetworkMap.verifiedNetworkMapCert(trustedRoot)
         val timeout = connection.cacheControl().maxAgeSeconds().seconds

@@ -19,6 +19,7 @@ import net.corda.core.serialization.serialize
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.transactions.WireTransaction
 import net.corda.core.utilities.OpaqueBytes
+import net.corda.core.utilities.toBase58String
 import org.bouncycastle.asn1.x500.X500Name
 import org.bouncycastle.asn1.x500.X500NameBuilder
 import org.bouncycastle.asn1.x500.style.BCStyle
@@ -40,6 +41,7 @@ import java.nio.file.attribute.FileAttribute
 import java.nio.file.attribute.FileTime
 import java.security.KeyPair
 import java.security.PrivateKey
+import java.security.PublicKey
 import java.security.cert.X509Certificate
 import java.time.Duration
 import java.time.temporal.Temporal
@@ -325,6 +327,16 @@ fun TransactionBuilder.toLedgerTransaction(services: ServicesForResolution, seri
 val KClass<*>.packageName: String get() = java.`package`.name
 
 fun URL.openHttpConnection(): HttpURLConnection = openConnection() as HttpURLConnection
+
+fun URL.get(owningKey: PublicKey?): HttpURLConnection {
+    val myURLConnection = this.openConnection() as HttpURLConnection
+    myURLConnection.requestMethod = "GET"
+    owningKey?.let {
+        myURLConnection.setRequestProperty("NODE_ID", owningKey.toBase58String())
+    }
+    return myURLConnection
+}
+
 
 fun URL.post(serializedData: OpaqueBytes) {
     openHttpConnection().apply {

@@ -2,6 +2,7 @@ package net.corda.testing.node.internal.network
 
 import net.corda.core.crypto.SecureHash
 import net.corda.core.crypto.SignedData
+import net.corda.core.identity.PartyAndCertificate
 import net.corda.core.internal.signWithCert
 import net.corda.core.node.NodeInfo
 import net.corda.core.serialization.deserialize
@@ -11,8 +12,10 @@ import net.corda.nodeapi.internal.SignedNodeInfo
 import net.corda.nodeapi.internal.createDevNetworkMapCa
 import net.corda.nodeapi.internal.crypto.CertificateAndKeyPair
 import net.corda.core.node.NetworkParameters
+import net.corda.core.utilities.toBase58String
 import net.corda.nodeapi.internal.network.NetworkMap
 import net.corda.nodeapi.internal.network.ParametersUpdate
+import net.corda.testing.core.TestIdentity
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.server.ServerConnector
 import org.eclipse.jetty.server.handler.HandlerCollection
@@ -107,6 +110,7 @@ class NetworkMapServer(private val cacheTimeout: Duration,
     @Path("network-map")
     inner class InMemoryNetworkMapService {
         private val nodeInfoMap = mutableMapOf<SecureHash, SignedNodeInfo>()
+        val whitelistedNodes = mutableSetOf<String>()
         val latestAcceptedParametersMap = mutableMapOf<PublicKey, SecureHash>()
         private val signedNetParams by lazy {
             networkParameters.signWithCert(networkMapCa.keyPair.private, networkMapCa.certificate)
@@ -141,10 +145,14 @@ class NetworkMapServer(private val cacheTimeout: Duration,
 
         @GET
         @Produces(MediaType.APPLICATION_OCTET_STREAM)
-        fun getNetworkMap(): Response {
-            val networkMap = NetworkMap(nodeInfoMap.keys.toList(), signedNetParams.raw.hash, parametersUpdate)
-            val signedNetworkMap = networkMap.signWithCert(networkMapCa.keyPair.private, networkMapCa.certificate)
-            return Response.ok(signedNetworkMap.serialize().bytes).header("Cache-Control", "max-age=${cacheTimeout.seconds}").build()
+        fun getNetworkMap(@HeaderParam("NODE_ID") nodePublicKey: String?): Response {
+            if (nodePublicKey in whitelistedNodes) {
+                val networkMap = NetworkMap(nodeInfoMap.keys.toList(), signedNetParams.raw.hash, parametersUpdate)
+                val signedNetworkMap = networkMap.signWithCert(networkMapCa.keyPair.private, networkMapCa.certificate)
+                return Response.ok(signedNetworkMap.serialize().bytes).header("Cache-Control", "max-age=${cacheTimeout.seconds}").build()
+            } else {
+                return Response.status(Response.Status.UNAUTHORIZED).build()
+            }
         }
 
         // Remove nodeInfo for testing.
@@ -181,5 +189,9 @@ class NetworkMapServer(private val cacheTimeout: Duration,
         @GET
         @Path("my-hostname")
         fun getHostName(): Response = Response.ok(myHostNameValue).build()
+    }
+
+    fun whiteListNode(name: PartyAndCertificate) {
+        this.service.whitelistedNodes.add(name.owningKey.toBase58String())
     }
 }

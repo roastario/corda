@@ -6,6 +6,7 @@ import net.corda.core.identity.CordaX500Name
 import net.corda.core.identity.Party
 import net.corda.core.internal.concurrent.map
 import net.corda.node.internal.Node
+import net.corda.testing.core.TestIdentity
 import net.corda.testing.node.User
 import net.corda.testing.node.NotarySpec
 import java.nio.file.Path
@@ -27,13 +28,14 @@ interface DriverDSL {
      * Returns the [NotaryHandle] for the single notary on the network. Throws if there are none or more than one.
      * @see notaryHandles
      */
-    val defaultNotaryHandle: NotaryHandle get() {
-        return when (notaryHandles.size) {
-            0 -> throw IllegalStateException("There are no notaries defined on the network")
-            1 -> notaryHandles[0]
-            else -> throw IllegalStateException("There is more than one notary defined on the network")
+    val defaultNotaryHandle: NotaryHandle
+        get() {
+            return when (notaryHandles.size) {
+                0 -> throw IllegalStateException("There are no notaries defined on the network")
+                1 -> notaryHandles[0]
+                else -> throw IllegalStateException("There is more than one notary defined on the network")
+            }
         }
-    }
 
     /**
      * Returns the identity of the single notary on the network. Throws if there are none or more than one.
@@ -47,11 +49,12 @@ interface DriverDSL {
      * @see defaultNotaryHandle
      * @see notaryHandles
      */
-    val defaultNotaryNode: CordaFuture<NodeHandle> get() {
-        return defaultNotaryHandle.nodeHandles.map {
-            it.singleOrNull() ?: throw IllegalStateException("Default notary is not a single node")
+    val defaultNotaryNode: CordaFuture<NodeHandle>
+        get() {
+            return defaultNotaryHandle.nodeHandles.map {
+                it.singleOrNull() ?: throw IllegalStateException("Default notary is not a single node")
+            }
         }
-    }
 
     /**
      * Start a node.
@@ -77,7 +80,8 @@ interface DriverDSL {
             verifierType: VerifierType = defaultParameters.verifierType,
             customOverrides: Map<String, Any?> = defaultParameters.customOverrides,
             startInSameProcess: Boolean? = defaultParameters.startInSameProcess,
-            maximumHeapSize: String = defaultParameters.maximumHeapSize
+            maximumHeapSize: String = defaultParameters.maximumHeapSize,
+            providedIdentity: TestIdentity? = null
     ): CordaFuture<NodeHandle>
 
     /**

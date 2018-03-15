@@ -44,6 +44,7 @@ import net.corda.nodeapi.internal.network.NodeInfoFilesCopier
 import net.corda.testing.core.ALICE_NAME
 import net.corda.testing.core.BOB_NAME
 import net.corda.testing.core.DUMMY_BANK_A_NAME
+import net.corda.testing.core.TestIdentity
 import net.corda.testing.driver.*
 import net.corda.testing.driver.VerifierType
 import net.corda.testing.driver.internal.InProcessImpl
@@ -183,11 +184,11 @@ class DriverDSLImpl(
             verifierType: VerifierType,
             customOverrides: Map<String, Any?>,
             startInSameProcess: Boolean?,
-            maximumHeapSize: String
+            maximumHeapSize: String,
+            providedIdentity: TestIdentity?
     ): CordaFuture<NodeHandle> {
         val p2pAddress = portAllocation.nextHostAndPort()
-        // TODO: Derive name from the full picked name, don't just wrap the common name
-        val name = providedName ?: CordaX500Name("${oneOf(names).organisation}-${p2pAddress.port}", "London", "GB")
+        val name = providedIdentity?.name ?: providedName ?: CordaX500Name("${oneOf(names).organisation}-${p2pAddress.port}", "London", "GB")
         synchronized(nodeNames) {
             val wasANewNode = nodeNames.add(name)
             if (!wasANewNode) {

@@ -28,6 +28,8 @@ val BOC_NAME = CordaX500Name("BankOfCorda", "London", "GB")
 /** A test node name **/
 @JvmField
 val ALICE_NAME = CordaX500Name("Alice Corp", "Madrid", "ES")
+@JvmField
+val ALICE_IDENTITY = TestIdentity(name = ALICE_NAME)
 /** A test node name **/
 @JvmField
 val BOB_NAME = CordaX500Name("Bob Plc", "Rome", "IT")
