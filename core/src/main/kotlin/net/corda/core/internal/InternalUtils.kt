@@ -121,7 +121,7 @@ fun <T> List<T>.indexOfOrThrow(item: T): Int {
 }
 
 fun Path.createDirectory(vararg attrs: FileAttribute<*>): Path = Files.createDirectory(this, *attrs)
-fun Path.createDirectories(vararg attrs: FileAttribute<*>): Path = Files.createDirectories(this, *attrs)
+fun Path.createDirectories(vararg attrs: FileAttribute<*>): Path = CreateDirectoriesWithLinks.createDirectories(this, *attrs)
 fun Path.exists(vararg options: LinkOption): Boolean = Files.exists(this, *options)
 fun Path.copyToDirectory(targetDir: Path, vararg options: CopyOption): Path {
     require(targetDir.isDirectory()) { "$targetDir is not a directory" }
