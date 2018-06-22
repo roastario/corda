@@ -17,7 +17,6 @@ import net.corda.bootstrapper.Constants
 import net.corda.bootstrapper.GuiUtils
 import net.corda.bootstrapper.NetworkBuilder
 import net.corda.bootstrapper.backends.Backend
-import net.corda.bootstrapper.baseArgs
 import net.corda.bootstrapper.context.Context
 import net.corda.bootstrapper.nodes.*
 import net.corda.bootstrapper.notaries.NotaryFinder
@@ -47,7 +46,6 @@ class BootstrapperView : View("Corda Network Builder") {
 
     init {
         visuallyTweakBackendSelector()
-
         buildButton.run {
             enableWhen { controller.baseDir.isNotNull }
             action {
@@ -96,7 +94,6 @@ class BootstrapperView : View("Corda Network Builder") {
                 }
             }
         }
-
         templateChoiceBox.run {
             enableWhen { controller.networkContext.isNotNull }
             controller.networkContext.addListener { _, _, newValue ->
@@ -113,7 +110,6 @@ class BootstrapperView : View("Corda Network Builder") {
                 }
             }
         }
-
         addInstanceButton.run {
             enableWhen { controller.networkContext.isNotNull }
             action {
@@ -146,7 +142,6 @@ class BootstrapperView : View("Corda Network Builder") {
                 }
             }
         }
-
         nodeTableView.run {
             items = controller.sortedNodes
             column("ID", NodeTemplateInfo::templateId)
@@ -161,12 +156,6 @@ class BootstrapperView : View("Corda Network Builder") {
                 val selectedItem: NodeTemplateInfo = selectionModel.selectedItem ?: return@EventHandler
                 infoTextArea.text = YAML_MAPPER.writeValueAsString(translateForPrinting(selectedItem))
             }
-        }
-
-        try {
-            processSelectedDirectory(baseArgs.baseDirectory)
-        } catch (e: Exception) {
-            e.printStackTrace()
         }
     }
 
@@ -223,12 +212,12 @@ class BootstrapperView : View("Corda Network Builder") {
         }
         foundNodes.thenCombine(foundNotaries) { nodes, notaries ->
             notaries to nodes
-        }.thenAcceptAsync({ (notaries: List<FoundNode>, nodes: List<FoundNode>) ->
+        }.thenAcceptAsync { (notaries: List<FoundNode>, nodes: List<FoundNode>) ->
             runLater {
                 controller.foundNodes(nodes)
                 controller.notaries(notaries)
             }
-        })
+        }
     }
 
     class NodeTemplateInfo(templateId: String, type: NodeType) {
