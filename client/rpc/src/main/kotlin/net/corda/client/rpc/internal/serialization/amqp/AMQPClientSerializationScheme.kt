@@ -3,7 +3,7 @@ package net.corda.client.rpc.internal.serialization.amqp
 import net.corda.core.cordapp.Cordapp
 import net.corda.core.serialization.ClassWhitelist
 import net.corda.core.serialization.SerializationContext
-import net.corda.core.serialization.SerializationContext.*
+import net.corda.core.serialization.SerializationContext.UseCase
 import net.corda.core.serialization.SerializationCustomSerializer
 import net.corda.core.serialization.internal.SerializationEnvironment
 import net.corda.core.serialization.internal.SerializationEnvironmentImpl
@@ -52,7 +52,7 @@ class AMQPClientSerializationScheme(
     }
 
     override fun rpcClientSerializerFactory(context: SerializationContext): SerializerFactory {
-        return SerializerFactory(context.whitelist, ClassLoader.getSystemClassLoader(), context.lenientCarpenterEnabled).apply {
+        return SerializerFactory(context.whitelist, Thread.currentThread().contextClassLoader, context.lenientCarpenterEnabled).apply {
             register(RpcClientObservableSerializer)
             register(RpcClientCordaFutureSerializer(this))
             register(RxNotificationSerializer(this))
